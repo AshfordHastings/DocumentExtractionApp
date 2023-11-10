@@ -13,6 +13,9 @@ from langchain_app.contexts import (
     DocumentExtractionContext
 )
 
+from langchain_app.extractor import SimpleDocumentPDFExtractionChainBuilder
+from langchain_app.contexts import LocalPDFDocumentArtifact
+
 TEST_DOC_PATH = os.path.join(os.getenv("BASE_PATH"), "tests/data/example_fatca.pdf")
 
 TEST_FORMAT_INSTRUCTIONS = """
@@ -51,7 +54,7 @@ def test_extraction_context_from_document(test_document_fatca:TestDocument):
     for doc in retrieved_docs:
         print(f"Score:\n{doc[1]}r\n\nChunk:\n{doc[0].page_content}")
     #print(f"Score:\n{retrieved_docs[0][1]}r\n\nChunk:\n{retrieved_docs[0][0].page_content}")
-
+@pytest.mark.skip('Completed')
 def test_extraction_from_document(test_document_fatca:TestDocument):
     context = DocumentExtractionContext(data=test_document_fatca.test_data)
     prompt_template = PromptTemplate(
@@ -67,3 +70,21 @@ def test_extraction_from_document(test_document_fatca:TestDocument):
     )
     chain_result = chain.invoke(test_document_fatca.test_query)
     print(chain_result)
+
+TEST_SCHEMA = {
+    "properties": {
+        "financial_institution_legal_name": {"type": "string"},
+        "financial_institution_country": {"type": "string"},
+        "financial_institution_tax_id": {"type": "string"},
+        "responsible_officer_name": {"type": "string"},
+        "responsible_officer_title": {"type": "string"},
+        "responsible_officer_email": {"type": "string"}
+    },
+    "required": ["financial_institution_legal_name"]
+}
+def test_extraction_chain():
+    test_artifact = LocalPDFDocumentArtifact(TEST_DOC_PATH)
+    extraction_chain = SimpleDocumentPDFExtractionChainBuilder(test_artifact, TEST_SCHEMA).build()
+    results = extraction_chain.extract(data="")
+    print(results)
+
