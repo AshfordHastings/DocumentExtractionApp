@@ -82,7 +82,8 @@ class StringExtractionContext(ExtractionContext):
         self.vector_store = vector_store or None
         self.embeddings = embeddings or None
 
-    def get_runnable(self):
+    def get_runnable(self, data:list[str]=None):
+        if data: self.data = data
         if not self.embeddings: self._init_embeddings() 
         if not self.vector_store: self._init_vector_store()
         return self.vector_store.as_retriever()

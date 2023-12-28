@@ -8,12 +8,13 @@ class ExtractionPromptTemplate:
         raise NotImplementedError("Not Implemented.")
 
 class SimpleExtractionPromptTemplate(ExtractionPromptTemplate):
-    def __init__(self, schema:dict):
+    def __init__(self, schema:dict={}):
         self.schema = schema
         self.prompt_outline = SIMPLE_EXTRACTION_TEMPLATE
         self.format_outline = SIMPLE_FORMAT_INSTRUCTIONS
 
-    def get_runnable(self):
+    def get_runnable(self, schema:dict={}):
+        self.schema = schema or self.schema
         format_instructions = self.format_outline.format(schema=json.dumps(self.schema))
 
         prompt_template = PromptTemplate(
@@ -21,5 +22,6 @@ class SimpleExtractionPromptTemplate(ExtractionPromptTemplate):
             input_variables=["context"],
             partial_variables={"format_instructions": format_instructions}
         )
-
+        print(prompt_template)
         return prompt_template
+    
